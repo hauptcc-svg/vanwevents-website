@@ -1,0 +1,75 @@
+IMMEDIATE BLOCKERS – REQUIRED TO BUILD CHECKOUT & PAYMENTS
+
+1. Pricing Structure [BLOCKER]
+The pricing details were not provided in the onboarding form. To build the booking engine, we need the exact pricing breakdown immediately:
+
+    Cabin tier names (e.g. Standard Inside, Deluxe Oceanview, VIP Suite)
+    Full price per person for each cabin tier
+    Minimum and maximum occupancy rules per cabin type (if applicable)
+
+2. Deposit Percentage [BLOCKER]
+You selected “Deposit now, balance later.” Please confirm one of the following:
+
+    Fixed deposit amount R3000 per person
+
+Without this information, we cannot build the booking or payment logic.
+ 
+
+3. Payment Gateway Credentials [BLOCKER]
+To connect the website to your bank account, we require your PayFast credentials. Please log into your PayFast account and provide:
+
+    Merchant ID
+    Merchant Key
+    Passphrase (required for secure payment verification)
+
+If you do not yet have an account, please create and verify one today using the following platforms:
+
+    https://www.payfast.io
+    https://www.yoco.com
+
+Without verified payment credentials, the website cannot accept payments or go live.
+ 
+
+HIGH URGENCY – REQUIRED FOR DESIGN & LEGAL SETUP
+
+4. Logo Source File
+Please send the highest quality version of your logo so design refinement can begin. Preferred formats are AI, EPS, or PDF. A high-resolution PNG is also acceptable.
+ 
+
+5. Competition Details
+We are configuring the R150 competition entry system and require the following:
+
+    Competition opening date and time
+    Competition closing date and time
+    Draw date
+    Prize clarification:
+        Is the prize one cabin for two people, or
+        Two separate winners each receiving their own cabin?
+         
+
+6. Legal Content (Mandatory for Go-Live)
+Because this website processes payments and runs a competition, the following documents are required before launch:
+
+    Website Terms & Conditions
+    Official Competition Rules
+    Booking Refund and Cancellation Policy
+     
+
+MEDIUM URGENCY – REQUIRED BY 15 FEBRUARY
+
+7. Artist Details and Media
+To build the layout and promotional sections, please send any confirmed information you currently have:
+
+    Names of confirmed artists
+    High-resolution artist photos
+    Social media reels or videos for the homepage background
+    Artist social media handles
+
+Partial information is acceptable at this stage.
+ 
+
+8. Cruise Experience Content
+Please provide a written overview of what this cruise experience includes and what guests will receive onboard. This content should be similar in style and detail to the following example:
+https://www.msccruises.co.za/cruise-deals/
+
+This information will form the core messaging of the homepage.

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npx vercel:*)",
+      "Bash(npm run:*)",
+      "Bash(dir \"C:\\\\Users\\\\haupt\\\\.claude\\\\projects\")",
+      "Bash(dir \"C:\\\\Users\\\\haupt\\\\.claude\\\\projects\\\\C--Users-haupt-Claude-vanwevents\")",
+      "Bash(dir \"C:\\\\Users\\\\haupt\\\\Claude\\\\vanwevents\\\\app\")"
+    ]
+  }
+}
