@@ -11,8 +11,8 @@ export default function Icon() {
         style={{
           width: 32,
           height: 32,
-          background: "#001A4D",
-          border: "1.5px solid #C9A84C",
+          background: "linear-gradient(135deg, #E91E8C 0%, #FF6B35 100%)",
+          borderRadius: 6,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -20,17 +20,13 @@ export default function Icon() {
       >
         <span
           style={{
-            color: "#C9A84C",
-            fontSize: 20,
-            fontWeight: 700,
-            fontFamily: "Georgia, serif",
+            color: "#ffffff",
+            fontSize: 22,
+            fontWeight: 800,
+            fontFamily: "Arial, sans-serif",
             lineHeight: 1,
           }}
         >
           V
         </span>
       </div>
-    ),
-    { ...size }
-  );
-}

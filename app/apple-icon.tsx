@@ -11,8 +11,8 @@ export default function AppleIcon() {
         style={{
           width: 180,
           height: 180,
-          background: "#001A4D",
-          border: "6px solid #C9A84C",
+          background: "linear-gradient(135deg, #E91E8C 0%, #FF6B35 100%)",
+          borderRadius: 28,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -22,10 +22,10 @@ export default function AppleIcon() {
       >
         <span
           style={{
-            color: "#C9A84C",
-            fontSize: 90,
-            fontWeight: 700,
-            fontFamily: "Georgia, serif",
+            color: "#ffffff",
+            fontSize: 100,
+            fontWeight: 800,
+            fontFamily: "Arial, sans-serif",
             lineHeight: 1,
           }}
         >
@@ -33,17 +33,12 @@ export default function AppleIcon() {
         </span>
         <span
           style={{
-            color: "rgba(201,168,76,0.6)",
-            fontSize: 14,
-            fontFamily: "sans-serif",
+            color: "rgba(255,255,255,0.7)",
+            fontSize: 16,
+            fontFamily: "Arial, sans-serif",
             letterSpacing: "0.2em",
             textTransform: "uppercase",
           }}
         >
           VWE
         </span>
-      </div>
-    ),
-    { ...size }
-  );
-}
