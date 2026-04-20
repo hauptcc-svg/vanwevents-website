@@ -42,3 +42,8 @@ export default function AppleIcon() {
         >
           VWE
         </span>
+      </div>
+    ),
+    { ...size }
+  );
+}
