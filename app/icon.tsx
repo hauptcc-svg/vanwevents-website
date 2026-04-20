@@ -30,3 +30,7 @@ export default function Icon() {
           V
         </span>
       </div>
+    ),
+    { ...size }
+  );
+}

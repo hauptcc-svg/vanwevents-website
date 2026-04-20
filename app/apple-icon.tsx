@@ -37,7 +37,6 @@ export default function AppleIcon() {
             fontSize: 16,
             fontFamily: "Arial, sans-serif",
             letterSpacing: "0.2em",
-            textTransform: "uppercase",
           }}
         >
           VWE
