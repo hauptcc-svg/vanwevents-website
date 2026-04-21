@@ -11,7 +11,8 @@ const schema = z.object({
   cabinPreference: z.string().min(1),
   partySize: z.string().min(1),
   message: z.string().optional().default(""),
-  paystackReference: z.string().min(1),
+  // Optional — only present when a Paystack deposit has already been paid
+  paystackReference: z.string().optional(),
 });
 
 async function verifyPaystackPayment(
@@ -44,7 +45,7 @@ async function verifyPaystackPayment(
     const txn = json?.data;
 
     if (txn?.status === "success") {
-      return { verified: true, amount: Math.round(txn.amount / 100) }; // kobo to ZAR
+      return { verified: true, amount: Math.round(txn.amount / 100) }; // kobo → ZAR
     }
 
     console.warn("[Paystack] Transaction not successful:", txn?.status);
@@ -73,16 +74,19 @@ export async function POST(request: Request) {
 
   const { paystackReference, ...formData } = parsed.data;
 
-  // Verify the payment with Paystack
-  const { verified, amount } = await verifyPaystackPayment(paystackReference);
-  if (!verified) {
-    return NextResponse.json(
-      { error: "Payment could not be verified. Please contact support." },
-      { status: 402 }
-    );
+  // Only verify payment when a reference is present (booking form with deposit)
+  // Pure enquiry submissions have no reference and skip this step
+  let depositPaidZAR: number | undefined;
+  if (paystackReference) {
+    const { verified, amount } = await verifyPaystackPayment(paystackReference);
+    if (!verified) {
+      return NextResponse.json(
+        { error: "Payment could not be verified. Please contact support." },
+        { status: 402 }
+      );
+    }
+    depositPaidZAR = amount ?? getDepositZAR(formData.cruiseInterest);
   }
-
-  const depositPaidZAR = amount ?? getDepositZAR(formData.cruiseInterest);
 
   // Skip email in dev without a real Resend key
   if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === "re_your_api_key_here") {
@@ -95,7 +99,7 @@ export async function POST(request: Request) {
   try {
     await sendEnquiryEmails({
       ...formData,
-      paystackReference,
+      paystackReference: paystackReference ?? undefined,
       depositPaidZAR,
     });
     return NextResponse.json({ success: true });
