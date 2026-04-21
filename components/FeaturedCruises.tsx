@@ -212,4 +212,14 @@ export default function FeaturedCruises() {
           <p className="text-white/40 text-sm font-sans mb-4">
             Don&apos;t see what you&apos;re looking for? We can source any MSC voyage.
           </p>
-          <butt
+          <button
+            onClick={scrollToEnquiry}
+            className="btn-ghost text-sm"
+          >
+            Request Custom Voyage
+          </button>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
