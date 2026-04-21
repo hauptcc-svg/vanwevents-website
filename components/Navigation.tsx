@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 const navLinks = [
   { label: "Cruises", href: "#cruises" },
@@ -12,6 +14,9 @@ const navLinks = [
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const isHome = pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -19,10 +24,14 @@ export default function Navigation() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollTo = (href: string) => {
+  const handleNavClick = (href: string) => {
     setMobileOpen(false);
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (isHome) {
+      const el = document.querySelector(href);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push(`/${href}`);
+    }
   };
 
   return (
@@ -40,10 +49,7 @@ export default function Navigation() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-3 group"
-            >
+            <Link href="/" className="flex items-center gap-3 group">
               <div className="relative">
                 <div className="w-10 h-10 border border-[#C9A84C]/60 flex items-center justify-center group-hover:border-[#C9A84C] transition-colors duration-300">
                   <span className="font-serif text-[#C9A84C] text-lg font-bold leading-none">V</span>
@@ -57,14 +63,14 @@ export default function Navigation() {
                   MSC Cruise Collection
                 </div>
               </div>
-            </button>
+            </Link>
 
             {/* Desktop links */}
             <div className="hidden md:flex items-center gap-10">
               {navLinks.map((link) => (
                 <button
                   key={link.label}
-                  onClick={() => scrollTo(link.href)}
+                  onClick={() => handleNavClick(link.href)}
                   className="text-white/70 hover:text-[#C9A84C] text-sm font-sans font-medium tracking-widest uppercase transition-colors duration-300"
                 >
                   {link.label}
@@ -75,7 +81,7 @@ export default function Navigation() {
             {/* CTA + hamburger */}
             <div className="flex items-center gap-4">
               <button
-                onClick={() => scrollTo("#enquiry")}
+                onClick={() => handleNavClick("#enquiry")}
                 className="hidden md:inline-flex btn-gold text-xs"
               >
                 Book Enquiry
@@ -122,22 +128,12 @@ export default function Navigation() {
               {navLinks.map((link) => (
                 <button
                   key={link.label}
-                  onClick={() => scrollTo(link.href)}
+                  onClick={() => handleNavClick(link.href)}
                   className="text-white text-2xl font-serif font-semibold hover:text-[#C9A84C] transition-colors"
                 >
                   {link.label}
                 </button>
               ))}
               <button
-                onClick={() => scrollTo("#enquiry")}
-                className="btn-gold mt-4"
-              >
-                Book Enquiry
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
-}
+                onClick={() => handleNavClick("#enquiry")}
+                

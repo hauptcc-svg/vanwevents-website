@@ -15,6 +15,7 @@ function CruiseCard({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   const handleMouseEnter = () => {
     setHovered(true);
@@ -25,6 +26,7 @@ function CruiseCard({
 
   const handleMouseLeave = () => {
     setHovered(false);
+    setVideoPlaying(false);
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -50,7 +52,7 @@ function CruiseCard({
             src={cruise.imageSrc}
             alt={cruise.name}
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${
-              hovered && cruise.videoSrc ? "opacity-0" : "opacity-100"
+              hovered && cruise.videoSrc && videoPlaying ? "opacity-0" : "opacity-100"
             } group-hover:scale-105`}
             onError={() => setImgError(true)}
           />
@@ -71,8 +73,10 @@ function CruiseCard({
             loop
             playsInline
             preload="none"
+            onPlay={() => setVideoPlaying(true)}
+            onPause={() => setVideoPlaying(false)}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-              hovered ? "opacity-100" : "opacity-0"
+              videoPlaying ? "opacity-100" : "opacity-0"
             }`}
           >
             <source src={cruise.videoSrc} type="video/mp4" />
@@ -208,14 +212,4 @@ export default function FeaturedCruises() {
           <p className="text-white/40 text-sm font-sans mb-4">
             Don&apos;t see what you&apos;re looking for? We can source any MSC voyage.
           </p>
-          <button
-            onClick={() => scrollToEnquiry()}
-            className="btn-ghost"
-          >
-            Request a Custom Voyage
-          </button>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
+          <butt
