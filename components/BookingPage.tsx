@@ -8,25 +8,6 @@ import Link from "next/link";
 import type { Cruise } from "@/lib/cruises";
 import { parsePriceZAR, formatZAR } from "@/lib/cruises";
 
-declare global {
-  interface Window {
-    PaystackPop: {
-      setup: (options: PaystackOptions) => { openIframe: () => void };
-    };
-  }
-}
-
-interface PaystackOptions {
-  key: string;
-  email: string;
-  amount: number;
-  currency: string;
-  ref: string;
-  label?: string;
-  onClose: () => void;
-  callback: (response: { reference: string }) => void;
-}
-
 const schema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   email: z.string().email("A valid email is required"),
@@ -56,7 +37,6 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  // Load Paystack JS once
   useEffect(() => {
     if (document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]')) {
       setScriptReady(true);
@@ -103,7 +83,9 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
   };
 
   const onSubmit = (data: FormData) => {
-    if (!scriptReady || !window.PaystackPop) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const PaystackPop = (window as any).PaystackPop;
+    if (!scriptReady || !PaystackPop) {
       setApiError("Payment system not ready. Please refresh the page and try again.");
       return;
     }
@@ -114,24 +96,23 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
 
     const ref = `VWE-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-    window.PaystackPop.setup({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+    PaystackPop.setup({
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
       email: data.email,
-      amount: deposit * 100, // kobo
+      amount: deposit * 100,
       currency: "ZAR",
       ref,
-      label: `VanWEvents – ${cruise.name} · Instalment 1 of 3`,
+      label: `VanWEvents - ${cruise.name} - Instalment 1 of 3`,
       onClose: () => {
         setPaymentCancelled(true);
         setIsSubmitting(false);
       },
-      callback: (response) => {
+      callback: (response: { reference: string }) => {
         submitBooking(data, response.reference);
       },
     }).openIframe();
   };
 
-  /* ─── Success screen ─── */
   if (success) {
     return (
       <div className="min-h-[70vh] bg-[#001A4D] flex items-center justify-center px-6 py-24">
@@ -143,7 +124,7 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
           </div>
           <h1 className="font-serif text-white text-4xl font-bold mb-3">Booking Secured!</h1>
           <p className="text-[#C9A84C] text-xs tracking-widest uppercase font-sans mb-6">
-            Instalment 1 of 3 paid · {formatZAR(deposit)}
+            Instalment 1 of 3 paid &middot; {formatZAR(deposit)}
           </p>
           <p className="text-white/70 font-sans leading-relaxed mb-3">
             Thank you for booking{" "}
@@ -160,10 +141,8 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
     );
   }
 
-  /* ─── Main page ─── */
   return (
     <div className="bg-[#001A4D] min-h-screen">
-      {/* Hero image */}
       <div className="relative h-72 md:h-[420px] overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -185,12 +164,11 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
             {cruise.name}
           </h1>
           <p className="text-white/60 font-sans text-sm mt-2">
-            {cruise.ship} &nbsp;·&nbsp; {cruise.duration} &nbsp;·&nbsp; Departing {cruise.embarkation}
+            {cruise.ship} &nbsp;&middot;&nbsp; {cruise.duration} &nbsp;&middot;&nbsp; Departing {cruise.embarkation}
           </p>
         </div>
       </div>
 
-      {/* Back link */}
       <div className="max-w-6xl mx-auto px-6 pt-8">
         <Link href="/#cruises" className="text-white/40 text-xs font-sans uppercase tracking-wider hover:text-[#C9A84C] transition-colors inline-flex items-center gap-2">
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -200,10 +178,8 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
         </Link>
       </div>
 
-      {/* Two-column content */}
       <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 items-start">
 
-        {/* LEFT: blurb + highlights + payment terms */}
         <div>
           <h2 className="font-serif text-white text-2xl font-semibold mb-4">About This Voyage</h2>
           <p className="text-white/70 font-sans leading-relaxed text-base mb-10">
@@ -222,94 +198,60 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
             ))}
           </ul>
 
-          {/* Payment terms box */}
           <div className="border border-[#C9A84C]/25 rounded-sm p-6 bg-[#C9A84C]/5">
             <h3 className="text-[#C9A84C] text-[10px] tracking-widest uppercase font-sans mb-6">
-              Payment Plan — 3 Easy Instalments
+              Payment Plan &mdash; 3 Easy Instalments
             </h3>
 
             <div className="space-y-5">
-              {/* Instalment 1 */}
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-white font-sans text-sm font-semibold">
-                    Instalment 1 — Due Today
-                  </div>
-                  <div className="text-white/45 text-xs font-sans mt-0.5">
-                    Secures your cabin &amp; confirms booking
-                  </div>
+                  <div className="text-white font-sans text-sm font-semibold">Instalment 1 &mdash; Due Today</div>
+                  <div className="text-white/45 text-xs font-sans mt-0.5">Secures your cabin and confirms booking</div>
                 </div>
-                <div className="text-[#C9A84C] font-serif font-bold text-xl ml-4">
-                  {formatZAR(deposit)}
-                </div>
+                <div className="text-[#C9A84C] font-serif font-bold text-xl ml-4">{formatZAR(deposit)}</div>
               </div>
 
               <div className="border-t border-white/10" />
 
-              {/* Instalment 2 */}
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-white/70 font-sans text-sm">
-                    Instalment 2 — ~60 days after booking
-                  </div>
-                  <div className="text-white/40 text-xs font-sans mt-0.5">
-                    Payment link sent by VanWEvents
-                  </div>
+                  <div className="text-white/70 font-sans text-sm">Instalment 2 &mdash; ~60 days after booking</div>
+                  <div className="text-white/40 text-xs font-sans mt-0.5">Payment link sent by VanWEvents</div>
                 </div>
-                <div className="text-white/70 font-serif text-lg ml-4">
-                  {formatZAR(instalment2)}
-                </div>
+                <div className="text-white/70 font-serif text-lg ml-4">{formatZAR(instalment2)}</div>
               </div>
 
               <div className="border-t border-white/10" />
 
-              {/* Instalment 3 */}
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-white/70 font-sans text-sm">
-                    Instalment 3 — 30 days before departure
-                  </div>
-                  <div className="text-white/40 text-xs font-sans mt-0.5">
-                    Final balance — payment link sent by VanWEvents
-                  </div>
+                  <div className="text-white/70 font-sans text-sm">Instalment 3 &mdash; 30 days before departure</div>
+                  <div className="text-white/40 text-xs font-sans mt-0.5">Final balance &mdash; payment link sent by VanWEvents</div>
                 </div>
-                <div className="text-white/70 font-serif text-lg ml-4">
-                  {formatZAR(instalment3)}
-                </div>
+                <div className="text-white/70 font-serif text-lg ml-4">{formatZAR(instalment3)}</div>
               </div>
 
               <div className="border-t border-[#C9A84C]/20 pt-4">
                 <div className="flex items-center justify-between">
-                  <div className="text-white/50 text-xs font-sans uppercase tracking-wider">
-                    Total per person from
-                  </div>
-                  <div className="text-white font-serif font-bold text-xl">
-                    {cruise.priceFrom}
-                  </div>
+                  <div className="text-white/50 text-xs font-sans uppercase tracking-wider">Total per person from</div>
+                  <div className="text-white font-serif font-bold text-xl">{cruise.priceFrom}</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* RIGHT: booking form */}
         <div className="lg:sticky lg:top-8">
           <div className="bg-[#002066] border border-white/10 rounded-sm p-8">
             <div className="mb-6">
-              <h2 className="font-serif text-white text-2xl font-semibold mb-1">
-                Secure Your Spot
-              </h2>
-              <p className="text-white/50 text-sm font-sans">
-                Pay {formatZAR(deposit)} deposit today to confirm your booking.
-              </p>
+              <h2 className="font-serif text-white text-2xl font-semibold mb-1">Secure Your Spot</h2>
+              <p className="text-white/50 text-sm font-sans">Pay {formatZAR(deposit)} deposit today to confirm your booking.</p>
             </div>
 
-            {/* Warnings */}
             {paymentCancelled && (
               <div className="mb-5 p-4 bg-amber-500/10 border border-amber-500/30 rounded-sm">
-                <p className="text-amber-400 text-sm font-sans">
-                  Payment window was closed. You can try again below.
-                </p>
+                <p className="text-amber-400 text-sm font-sans">Payment window was closed. You can try again below.</p>
               </div>
             )}
             {apiError && (
@@ -321,43 +263,20 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div>
                 <label className="form-label">Full Name</label>
-                <input
-                  {...register("fullName")}
-                  className="form-input"
-                  placeholder="Jane Smith"
-                  autoComplete="name"
-                />
-                {errors.fullName && (
-                  <p className="form-error">{errors.fullName.message}</p>
-                )}
+                <input {...register("fullName")} className="form-input" placeholder="Jane Smith" autoComplete="name" />
+                {errors.fullName && <p className="form-error">{errors.fullName.message}</p>}
               </div>
 
               <div>
                 <label className="form-label">Email Address</label>
-                <input
-                  {...register("email")}
-                  type="email"
-                  className="form-input"
-                  placeholder="jane@example.com"
-                  autoComplete="email"
-                />
-                {errors.email && (
-                  <p className="form-error">{errors.email.message}</p>
-                )}
+                <input {...register("email")} type="email" className="form-input" placeholder="jane@example.com" autoComplete="email" />
+                {errors.email && <p className="form-error">{errors.email.message}</p>}
               </div>
 
               <div>
                 <label className="form-label">Phone Number</label>
-                <input
-                  {...register("phone")}
-                  type="tel"
-                  className="form-input"
-                  placeholder="+27 60 000 0000"
-                  autoComplete="tel"
-                />
-                {errors.phone && (
-                  <p className="form-error">{errors.phone.message}</p>
-                )}
+                <input {...register("phone")} type="tel" className="form-input" placeholder="+27 60 000 0000" autoComplete="tel" />
+                {errors.phone && <p className="form-error">{errors.phone.message}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -370,9 +289,7 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
                     <option value="Balcony">Balcony</option>
                     <option value="Suite">Suite</option>
                   </select>
-                  {errors.cabinPreference && (
-                    <p className="form-error">{errors.cabinPreference.message}</p>
-                  )}
+                  {errors.cabinPreference && <p className="form-error">{errors.cabinPreference.message}</p>}
                 </div>
 
                 <div>
@@ -385,9 +302,7 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
                       </option>
                     ))}
                   </select>
-                  {errors.partySize && (
-                    <p className="form-error">{errors.partySize.message}</p>
-                  )}
+                  {errors.partySize && <p className="form-error">{errors.partySize.message}</p>}
                 </div>
               </div>
 
@@ -396,13 +311,11 @@ export default function BookingPage({ cruise }: { cruise: Cruise }) {
                 disabled={isSubmitting || !scriptReady}
                 className="w-full btn-gold justify-center py-4 text-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting
-                  ? "Processing…"
-                  : `Pay ${formatZAR(deposit)} Deposit & Book`}
+                {isSubmitting ? "Processing..." : `Pay ${formatZAR(deposit)} Deposit & Book`}
               </button>
 
               <p className="text-white/30 text-[11px] font-sans text-center leading-relaxed">
-                Secure payment via Paystack · Card details never stored by VanWEvents
+                Secure payment via Paystack &middot; Card details never stored by VanWEvents
               </p>
             </form>
           </div>
