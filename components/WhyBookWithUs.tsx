@@ -134,7 +134,7 @@ export default function WhyBookWithUs() {
             </p>
           </div>
           <div className="flex items-center gap-8">
-            {["MSC Cruises", "PayFast", "Verified Reseller"].map((item) => (
+            {["MSC Cruises", "Paystack", "Verified Reseller"].map((item) => (
               <span key={item} className="text-white/25 text-xs font-sans tracking-widest uppercase">
                 {item}
               </span>
