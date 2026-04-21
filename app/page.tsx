@@ -13,4 +13,9 @@ export default function HomePage() {
       <Hero />
       <AboutBlurb />
       <FeaturedCruises />
-      <WhyB
+      <WhyBookWithUs />
+      <EnquiryForm />
+      <Footer />
+    </main>
+  );
+}
