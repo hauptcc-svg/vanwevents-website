@@ -26,7 +26,7 @@ app/
   page.tsx                  # Home page — all sections composed here
   layout.tsx                # Root layout, fonts, metadata
   cruises/[slug]/page.tsx   # Individual cruise booking page
-  api/contact/route.ts      # POST handler: verifies Paystack payment, sends emails
+  api/contact/route.ts      # POST handler: sends enquiry emails; optionally verifies Paystack payment if reference present
   opengraph-image.tsx       # Auto-generated OG image
   sitemap.ts                # Auto-generated sitemap
 
@@ -35,7 +35,7 @@ components/
   Hero.tsx                  # Hero section
   FeaturedCruises.tsx       # Cruise card grid
   BookingPage.tsx           # Full booking form with live pricing
-  EnquiryForm.tsx           # Lightweight enquiry / contact form
+  EnquiryForm.tsx           # Enquiry form on home page — submits directly, no payment required
   WhyBookWithUs.tsx         # Trust section
   AboutBlurb.tsx            # About section
   Footer.tsx                # Footer
@@ -70,15 +70,22 @@ In local development, both can be omitted — the API route logs to console inst
 
 ---
 
-## Booking flow
+## Booking flows
 
+### Enquiry (home page `#enquiry` section)
+1. Visitor fills in `EnquiryForm` (name, email, phone, cruise interest, cabin, party size)
+2. Form POSTs to `/api/contact` — no payment reference included
+3. API route skips Paystack verification and sends emails via Resend
+4. Two emails sent: confirmation to the customer, notification to `bookings@vanwevents.co.za`
+
+### Paid booking (`/cruises/[slug]`)
 1. Visitor browses cruises on the home page (`FeaturedCruises`)
 2. Clicks "Book This Voyage" → `/cruises/[slug]`
-3. `BookingPage` renders the form with live cabin pricing (dropdown updates total dynamically)
-4. On submit, Paystack popup collects the deposit payment
+3. `BookingPage` renders the form with live cabin pricing
+4. On submit, Paystack popup collects the 33% deposit
 5. On Paystack success, the form POSTs to `/api/contact` with the payment reference
-6. The API route verifies the payment against Paystack's API, then calls `sendEnquiryEmails()` via Resend
-7. Two emails are sent: confirmation to the customer, notification to `bookings@vanwevents.co.za`
+6. API route verifies the payment against Paystack's API, then calls `sendEnquiryEmails()` via Resend
+7. Two emails sent: booking confirmation (with reference) to the customer, notification to `bookings@vanwevents.co.za`
 
 ---
 
