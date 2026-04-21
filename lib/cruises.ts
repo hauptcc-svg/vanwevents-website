@@ -138,3 +138,20 @@ export const cruises: Cruise[] = [
 export function getCruiseBySlug(slug: string): Cruise | undefined {
   return cruises.find((c) => c.slug === slug);
 }
+
+/** Parse priceFrom string (e.g. "R 18 500") to a plain number */
+export function parsePriceZAR(priceFrom: string): number {
+  return parseInt(priceFrom.replace(/[R\s,]/g, ""), 10);
+}
+
+/** Return the 33% instalment-1 deposit in ZAR for a given cruise name */
+export function getDepositZAR(cruiseName: string): number {
+  const cruise = cruises.find((c) => c.name === cruiseName);
+  if (!cruise) return 1500; // fallback for "Custom Voyage"
+  return Math.round(parsePriceZAR(cruise.priceFrom) * 0.33);
+}
+
+/** Format a ZAR amount as "R X,XXX" */
+export function formatZAR(amount: number): string {
+  return `R ${amount.toLocaleString("en-ZA")}`;
+}
