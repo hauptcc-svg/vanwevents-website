@@ -1,31 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { cruises, getDepositZAR, formatZAR } from "@/lib/cruises";
-
-declare global {
-  interface Window {
-    PaystackPop: {
-      setup: (options: PaystackSetupOptions) => { openIframe: () => void };
-    };
-  }
-}
-
-interface PaystackSetupOptions {
-  key: string;
-  email: string;
-  amount: number;
-  currency: string;
-  ref: string;
-  label?: string;
-  metadata?: Record<string, unknown>;
-  onClose: () => void;
-  callback: (response: { reference: string }) => void;
-}
+import { cruises } from "@/lib/cruises";
 
 const schema = z.object({
   fullName: z.string().min(2, "Please enter your full name"),
@@ -50,103 +30,34 @@ export default function EnquiryForm() {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentCancelled, setPaymentCancelled] = useState(false);
-  const [scriptReady, setScriptReady] = useState(false);
 
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const selectedCruise = useWatch({ control, name: "cruiseInterest" });
-  const depositZAR = selectedCruise ? getDepositZAR(selectedCruise) : null;
-
-  // Load Paystack inline script once on mount
-  useEffect(() => {
-    const src = "https://js.paystack.co/v1/inline.js";
-    if (document.querySelector(`script[src="${src}"]`)) {
-      setScriptReady(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = src;
-    script.async = true;
-    script.onload = () => setScriptReady(true);
-    document.body.appendChild(script);
-  }, []);
-
-  const submitEnquiry = async (data: FormData, paystackReference: string) => {
+  const onSubmit = async (data: FormData) => {
     setServerError(null);
+    setIsSubmitting(true);
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, paystackReference }),
+        body: JSON.stringify(data),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(
-          body.error ?? "Something went wrong. Please contact us directly."
-        );
+        throw new Error(body.error ?? "Something went wrong. Please contact us directly.");
       }
       setSubmitted(true);
     } catch (err) {
-      setServerError(
-        err instanceof Error ? err.message : "Something went wrong."
-      );
+      setServerError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const onSubmit = (data: FormData) => {
-    if (!scriptReady || !window.PaystackPop) {
-      setServerError(
-        "Payment system not ready. Please refresh the page and try again."
-      );
-      return;
-    }
-
-    setPaymentCancelled(false);
-    setServerError(null);
-    setIsSubmitting(true);
-
-    const deposit = getDepositZAR(data.cruiseInterest);
-    const ref = `VWE-${Date.now()}-${Math.random()
-      .toString(36)
-      .substring(2, 7)
-      .toUpperCase()}`;
-
-    const handler = window.PaystackPop.setup({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
-      email: data.email,
-      amount: deposit * 100, // kobo
-      currency: "ZAR",
-      ref,
-      label: "VanWEvents – Instalment 1 of 3",
-      metadata: {
-        custom_fields: [
-          { display_name: "Full Name", variable_name: "full_name", value: data.fullName },
-          { display_name: "Phone", variable_name: "phone", value: data.phone },
-          { display_name: "Cruise", variable_name: "cruise", value: data.cruiseInterest },
-          { display_name: "Cabin", variable_name: "cabin", value: data.cabinPreference },
-          { display_name: "Party Size", variable_name: "party_size", value: data.partySize },
-        ],
-      },
-      onClose: () => {
-        setPaymentCancelled(true);
-        setIsSubmitting(false);
-      },
-      callback: (response: { reference: string }) => {
-        submitEnquiry(data, response.reference);
-      },
-    });
-
-    handler.openIframe();
   };
 
   return (
@@ -180,19 +91,17 @@ export default function EnquiryForm() {
               <span className="text-gold-shimmer italic">Voyage</span>
             </h2>
             <p className="text-white/60 font-sans text-base leading-relaxed mb-8">
-              Complete the form and secure your spot with a{" "}
-              <span className="text-[#C9A84C]">33% deposit</span> — paid in
-              three easy instalments. Our team will reach out within{" "}
-              <span className="text-[#C9A84C]">24 hours</span> with full
-              itinerary details.
+              Fill in the form and our team will reach out within{" "}
+              <span className="text-[#C9A84C]">24 hours</span> with personalised
+              pricing, availability, and full itinerary details.
             </p>
 
             {/* Instalment breakdown */}
             <div className="space-y-3 mb-8">
               {[
-                { n: 1, label: "Due now", note: "Secures your booking" },
+                { n: 1, label: "Due on confirmation", note: "33% secures your cabin" },
                 { n: 2, label: "Due at 60 days", note: "Sent via payment link" },
-                { n: 3, label: "Due at 30 days", note: "Final balance" },
+                { n: 3, label: "Due at 30 days before departure", note: "Final balance" },
               ].map(({ n, label, note }) => (
                 <div key={n} className="flex items-center gap-3 text-sm font-sans">
                   <span className="w-6 h-6 rounded-full border border-[#C9A84C]/50 flex items-center justify-center text-[#C9A84C] text-xs font-bold flex-shrink-0">
@@ -264,23 +173,16 @@ export default function EnquiryForm() {
                     </svg>
                   </div>
                   <h3 className="font-serif text-white text-2xl font-semibold mb-3">
-                    Booking Secured!
+                    Enquiry Received!
                   </h3>
                   <p className="text-white/60 font-sans text-sm leading-relaxed max-w-xs mb-4">
-                    Your deposit has been received and your spot is confirmed.
-                    Our team will be in touch within{" "}
-                    <span className="text-[#C9A84C]">24 hours</span> with your
-                    full itinerary and instalment schedule.
+                    Thank you for reaching out. Our team will be in touch within{" "}
+                    <span className="text-[#C9A84C]">24 hours</span> with
+                    personalised pricing and availability.
                   </p>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 border border-[#C9A84C]/30 rounded-full mb-6">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]" />
-                    <span className="text-[#C9A84C] text-xs tracking-wider uppercase font-sans">
-                      Instalment 1 of 3 paid
-                    </span>
-                  </div>
-                  <div className="w-12 h-px bg-[#C9A84C]/40 mx-auto" />
+                  <div className="w-12 h-px bg-[#C9A84C]/40 mx-auto mt-2" />
                   <p className="text-white/30 text-xs font-sans mt-4 tracking-wide">
-                    Check your inbox for a payment confirmation
+                    Check your inbox for a confirmation email
                   </p>
                 </motion.div>
               ) : (
@@ -290,7 +192,6 @@ export default function EnquiryForm() {
                   className="space-y-5"
                   noValidate
                 >
-                  {/* Row 1 */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-[#C9A84C] text-[11px] tracking-widest uppercase font-sans mb-2">
@@ -320,9 +221,8 @@ export default function EnquiryForm() {
                     </div>
                   </div>
 
-                  {/* Email */}
                   <div>
-                    <label className="block text-[#C9A84C] text-[11px] tracking-widests uppercase font-sans mb-2">
+                    <label className="block text-[#C9A84C] text-[11px] tracking-widest uppercase font-sans mb-2">
                       Email Address *
                     </label>
                     <input
@@ -336,7 +236,6 @@ export default function EnquiryForm() {
                     )}
                   </div>
 
-                  {/* Cruise Interest */}
                   <div>
                     <label className="block text-[#C9A84C] text-[11px] tracking-widest uppercase font-sans mb-2">
                       Cruise Interest *
@@ -364,7 +263,6 @@ export default function EnquiryForm() {
                     )}
                   </div>
 
-                  {/* Row 2 */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-[#C9A84C] text-[11px] tracking-widest uppercase font-sans mb-2">
@@ -412,7 +310,6 @@ export default function EnquiryForm() {
                     </div>
                   </div>
 
-                  {/* Message */}
                   <div>
                     <label className="block text-[#C9A84C] text-[11px] tracking-widest uppercase font-sans mb-2">
                       Additional Message
@@ -425,52 +322,12 @@ export default function EnquiryForm() {
                     />
                   </div>
 
-                  {/* Deposit preview — appears when cruise is selected */}
-                  {depositZAR && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-between px-4 py-3 border border-[#C9A84C]/25 bg-[#C9A84C]/5"
-                    >
-                      <div>
-                        <p className="text-[#C9A84C] text-[10px] tracking-widest uppercase font-sans">
-                          Instalment 1 of 3 · Due now
-                        </p>
-                        <p className="text-white font-serif text-xl font-semibold mt-0.5">
-                          {formatZAR(depositZAR)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 text-white/40 text-xs font-sans">
-                        <svg className="w-4 h-4 text-[#C9A84C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                        </svg>
-                        Secured by Paystack
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Payment cancelled notice */}
-                  {paymentCancelled && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex items-start gap-3 px-4 py-3 border border-amber-400/30 bg-amber-400/5 text-amber-300 text-sm font-sans"
-                    >
-                      <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                      </svg>
-                      Payment window closed. Please try again to secure your booking.
-                    </motion.div>
-                  )}
-
-                  {/* Server error */}
                   {serverError && (
                     <p className="text-red-400 text-sm border border-red-400/30 px-4 py-3">
                       {serverError}
                     </p>
                   )}
 
-                  {/* Submit */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
@@ -482,13 +339,11 @@ export default function EnquiryForm() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        Opening Payment…
+                        Sending…
                       </>
                     ) : (
                       <>
-                        {depositZAR
-                          ? `Pay ${formatZAR(depositZAR)} Deposit & Book`
-                          : "Continue to Payment"}
+                        Send Enquiry
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
@@ -497,7 +352,7 @@ export default function EnquiryForm() {
                   </button>
 
                   <p className="text-white/25 text-xs font-sans text-center">
-                    Instalment 1 of 3 · Secured by Paystack · ZAR
+                    Our team will respond within 24 hours · bookings@vanwevents.co.za
                   </p>
                 </motion.form>
               )}
