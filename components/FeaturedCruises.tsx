@@ -2,16 +2,15 @@
 
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { cruises, type Cruise } from "@/lib/cruises";
 
 function CruiseCard({
   cruise,
   index,
-  onEnquire,
 }: {
   cruise: Cruise;
   index: number;
-  onEnquire: (name: string) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -149,31 +148,21 @@ function CruiseCard({
         </ul>
 
         {/* CTA */}
-        <button
-          onClick={() => onEnquire(cruise.name)}
+        <Link
+          href={`/cruises/${cruise.slug}`}
           className="w-full btn-gold justify-center text-xs"
         >
-          Enquire About This Voyage
-        </button>
+          Book This Voyage
+        </Link>
       </div>
     </motion.article>
   );
 }
 
 export default function FeaturedCruises() {
-  const scrollToEnquiry = (cruiseName: string) => {
+  const scrollToEnquiry = () => {
     const el = document.querySelector("#enquiry");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-      // Pre-fill the cruise select after scroll
-      setTimeout(() => {
-        const select = document.querySelector<HTMLSelectElement>("#cruise-interest");
-        if (select) {
-          select.value = cruiseName;
-          select.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-      }, 800);
-    }
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -204,7 +193,6 @@ export default function FeaturedCruises() {
               key={cruise.slug}
               cruise={cruise}
               index={i}
-              onEnquire={scrollToEnquiry}
             />
           ))}
         </div>
@@ -221,7 +209,7 @@ export default function FeaturedCruises() {
             Don&apos;t see what you&apos;re looking for? We can source any MSC voyage.
           </p>
           <button
-            onClick={() => scrollToEnquiry("Custom Voyage")}
+            onClick={() => scrollToEnquiry()}
             className="btn-ghost"
           >
             Request a Custom Voyage

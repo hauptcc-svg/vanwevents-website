@@ -12,6 +12,7 @@ export interface Cruise {
   posterSrc?: string;
   embarkation: string;
   badge?: string;
+  blurb: string;
 }
 
 export const cruises: Cruise[] = [
@@ -34,6 +35,7 @@ export const cruises: Cruise[] = [
     posterSrc: "/videos/cruises/east-africa-poster.jpg",
     embarkation: "Durban, South Africa",
     badge: "Most Popular",
+    blurb: "Step aboard the MSC Sinfonia for an unforgettable 11-night journey through East Africa's most breathtaking destinations. From the powder-white beaches of Mozambique and the extraordinary wildlife of Madagascar, to the dramatic volcanic landscapes of Réunion — this voyage departs right from Durban's doorstep, making it the ultimate African adventure for South African travellers.",
   },
   {
     slug: "mediterranean",
@@ -54,6 +56,7 @@ export const cruises: Cruise[] = [
     posterSrc: "/videos/cruises/mediterranean-poster.jpg",
     embarkation: "Genoa, Italy",
     badge: "New Route",
+    blurb: "Sail the legendary Mediterranean aboard the luxurious MSC Splendida, visiting four iconic countries in 8 unforgettable nights. Explore the dramatic Amalfi coastline, follow Monaco's Grand Prix route, immerse yourself in Barcelona's vibrant Gothic Quarter, and wander the UNESCO-listed streets of Valletta — a seamless blend of history, world-class cuisine, and stunning coastal beauty.",
   },
   {
     slug: "greek-islands",
@@ -73,6 +76,7 @@ export const cruises: Cruise[] = [
     videoSrc: "/videos/cruises/greek-islands.mp4",
     posterSrc: "/videos/cruises/greek-islands-poster.jpg",
     embarkation: "Piraeus, Greece",
+    blurb: "Discover the timeless magic of Greece's most celebrated islands on this 7-night odyssey aboard the elegant MSC Musica. Walk in the footsteps of ancient civilisations in Athens, marvel at Santorini's famous volcanic caldera, soak up the sun on Mykonos's famous beaches, and explore the medieval old town of Rhodes — a journey that brings mythology to life.",
   },
   {
     slug: "caribbean",
@@ -93,65 +97,4 @@ export const cruises: Cruise[] = [
     posterSrc: "/videos/cruises/caribbean-poster.jpg",
     embarkation: "Miami, USA",
     badge: "Premium",
-  },
-  {
-    slug: "arabian-gulf",
-    name: "Arabian Gulf Luxury",
-    ship: "MSC Virtuosa",
-    destination: "Dubai, Abu Dhabi & Muscat",
-    region: "Arabian Gulf",
-    duration: "7 nights",
-    priceFrom: "R 22 900",
-    highlights: [
-      "Dubai city tour & desert safari",
-      "Ferrari World, Abu Dhabi",
-      "Old Muscat souks & forts",
-      "Luxury MSC Virtuosa ship",
-    ],
-    imageSrc: "/images/msc/arabian-gulf.jpg",
-    videoSrc: "/videos/cruises/arabian-gulf.mp4",
-    posterSrc: "/videos/cruises/arabian-gulf-poster.jpg",
-    embarkation: "Dubai, UAE",
-  },
-  {
-    slug: "northern-europe",
-    name: "Northern Europe Explorer",
-    ship: "MSC Preziosa",
-    destination: "Norway, Iceland & Scotland",
-    region: "Northern Europe",
-    duration: "14 nights",
-    priceFrom: "R 34 500",
-    highlights: [
-      "Norwegian fjords by ship",
-      "Northern Lights (seasonal)",
-      "Edinburgh castle & whisky",
-      "Iceland's geysers & waterfalls",
-    ],
-    imageSrc: "/images/msc/northern-europe.jpg",
-    videoSrc: "/videos/cruises/northern-europe.mp4",
-    posterSrc: "/videos/cruises/northern-europe-poster.jpg",
-    embarkation: "Southampton, UK",
-    badge: "Bucket List",
-  },
-];
-
-export function getCruiseBySlug(slug: string): Cruise | undefined {
-  return cruises.find((c) => c.slug === slug);
-}
-
-/** Parse priceFrom string (e.g. "R 18 500") to a plain number */
-export function parsePriceZAR(priceFrom: string): number {
-  return parseInt(priceFrom.replace(/[R\s,]/g, ""), 10);
-}
-
-/** Return the 33% instalment-1 deposit in ZAR for a given cruise name */
-export function getDepositZAR(cruiseName: string): number {
-  const cruise = cruises.find((c) => c.name === cruiseName);
-  if (!cruise) return 1500; // fallback for "Custom Voyage"
-  return Math.round(parsePriceZAR(cruise.priceFrom) * 0.33);
-}
-
-/** Format a ZAR amount as "R X,XXX" */
-export function formatZAR(amount: number): string {
-  return `R ${amount.toLocaleString("en-ZA")}`;
-}
+    blurb: "Escape to the turquoise waters of the Western Caribbean aboard the premium MSC Seashore. This 7-night voyage from Miami calls on
